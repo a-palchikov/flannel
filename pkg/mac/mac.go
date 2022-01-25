@@ -1,4 +1,4 @@
-// Copyright 2017 flannel authors
+// Copyright 2021 flannel authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -11,15 +11,25 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//go:build windows
-// +build windows
 
-package ipip
+package mac
 
 import (
-	log "github.com/golang/glog"
+	"crypto/rand"
+	"fmt"
+	"net"
 )
 
-func init() {
-	log.Infof("ipip is not supported on this platform")
+// NewHardwareAddr generates a new random hardware (MAC) address, local and
+// unicast.
+func NewHardwareAddr() (net.HardwareAddr, error) {
+	hardwareAddr := make(net.HardwareAddr, 6)
+	if _, err := rand.Read(hardwareAddr); err != nil {
+		return nil, fmt.Errorf("could not generate random MAC address: %w", err)
+	}
+
+	// Ensure that address is locally administered and unicast.
+	hardwareAddr[0] = (hardwareAddr[0] & 0xfe) | 0x02
+
+	return hardwareAddr, nil
 }

@@ -1,3 +1,4 @@
+//go:build !windows
 // +build !windows
 
 // Copyright 2015 flannel authors
@@ -13,7 +14,6 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-// +build !windows
 
 package vxlan
 
@@ -22,11 +22,11 @@ import (
 	"net"
 	"syscall"
 
-	log "github.com/golang/glog"
-	"github.com/vishvananda/netlink"
-
 	"github.com/containernetworking/plugins/pkg/utils/sysctl"
 	"github.com/coreos/flannel/pkg/ip"
+	"github.com/coreos/flannel/pkg/mac"
+	log "github.com/golang/glog"
+	"github.com/vishvananda/netlink"
 )
 
 type vxlanDeviceAttrs struct {
@@ -44,9 +44,15 @@ type vxlanDevice struct {
 }
 
 func newVXLANDevice(devAttrs *vxlanDeviceAttrs) (*vxlanDevice, error) {
+	hardwareAddr, err := mac.NewHardwareAddr()
+	if err != nil {
+		return nil, err
+	}
+
 	link := &netlink.Vxlan{
 		LinkAttrs: netlink.LinkAttrs{
-			Name: devAttrs.name,
+			Name:         devAttrs.name,
+			HardwareAddr: hardwareAddr,
 		},
 		VxlanId:      int(devAttrs.vni),
 		VtepDevIndex: devAttrs.vtepIndex,
@@ -56,7 +62,7 @@ func newVXLANDevice(devAttrs *vxlanDeviceAttrs) (*vxlanDevice, error) {
 		GBP:          devAttrs.gbp,
 	}
 
-	link, err := ensureLink(link)
+	link, err = ensureLink(link)
 	if err != nil {
 		return nil, err
 	}
@@ -112,8 +118,8 @@ func ensureLink(vxlan *netlink.Vxlan) (*netlink.Vxlan, error) {
 	return vxlan, nil
 }
 
-func (dev *vxlanDevice) Configure(ipn ip.IP4Net) error {
-	if err := ip.EnsureV4AddressOnLink(ipn, dev.link); err != nil {
+func (dev *vxlanDevice) Configure(ipa ip.IP4Net, flannelnet ip.IP4Net) error {
+	if err := ip.EnsureV4AddressOnLink(ipa, flannelnet, dev.link); err != nil {
 		return fmt.Errorf("failed to ensure address of interface %s: %s", dev.link.Attrs().Name, err)
 	}
 

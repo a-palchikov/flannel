@@ -90,13 +90,13 @@ test_vxlan_ping() {
     pings
 }
 
-if [[ ${ARCH} == "amd64" ]]; then
-test_udp_ping() {
-    write_config_etcd udp
-    create_ping_dest # creates ping_dest1 and ping_dest2 variables
-    pings
-}
-fi
+#if [[ ${ARCH} == "amd64" ]]; then
+#test_udp_ping() {
+#    write_config_etcd udp
+#    create_ping_dest # creates ping_dest1 and ping_dest2 variables
+#    pings
+#}
+#fi
 
 test_hostgw_ping() {
     write_config_etcd host-gw
@@ -135,13 +135,13 @@ test_vxlan_perf() {
     perf
 }
 
-if [[ ${ARCH} == "amd64" ]]; then
-test_udp_perf() {
-    write_config_etcd udp
-    create_ping_dest
-    perf
-}
-fi
+#if [[ ${ARCH} == "amd64" ]]; then
+#test_udp_perf() {
+#    write_config_etcd udp
+#    create_ping_dest
+#    perf
+#}
+#fi
 
 test_ipip_perf() {
     write_config_etcd ipip

@@ -1,4 +1,4 @@
-// Copyright 2017 flannel authors
+// Copyright 2021 flannel authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -11,15 +11,18 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//go:build windows
-// +build windows
 
-package ipip
+package mac
 
 import (
-	log "github.com/golang/glog"
+	"testing"
 )
 
-func init() {
-	log.Infof("ipip is not supported on this platform")
+func TestNewHardwareAddr(t *testing.T) {
+	// Ignore the actual address, since it's random.
+	// But an error should never be returned.
+	_, err := NewHardwareAddr()
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
 }
